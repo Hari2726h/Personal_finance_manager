@@ -1,28 +1,53 @@
-import { useState } from 'react';
-import { login } from '../api';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../api';
 
-export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+const Login = ({ setLoggedInUserId }) => {
+  const [form, setForm] = useState({ username: '', password: '' });
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login({ username, password });
+      const res = await login(form);
+      const userId = res.data.id;
+      localStorage.setItem('userId', userId);
+      setLoggedInUserId(userId);
       navigate('/dashboard');
     } catch (err) {
-      alert('Login failed');
+      console.error('Login error:', err);
+      alert('Invalid credentials');
     }
   };
 
   return (
-    <form onSubmit={handleLogin}>
+    <form onSubmit={handleSubmit}>
       <h2>Login</h2>
-      <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" required />
-      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required />
-      <button type="submit">Login</button>
+      <input
+        type="text"
+        name="username"
+        value={form.username}
+        onChange={handleChange}
+        placeholder="Username or Email"
+        required
+        className="form-control my-2"
+      />
+      <input
+        type="password"
+        name="password"
+        value={form.password}
+        onChange={handleChange}
+        placeholder="Password"
+        required
+        className="form-control my-2"
+      />
+      <button className="btn btn-primary mt-2" type="submit">Login</button>
     </form>
   );
-}
+};
+
+export default Login;

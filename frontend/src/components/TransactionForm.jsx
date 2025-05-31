@@ -1,70 +1,93 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { addTransaction, getCategories } from '../api';
 
-export default function TransactionForm({ onAdd }) {
-  const [form, setForm] = useState({
+const TransactionForm = ({ userId, onTransactionAdded }) => {
+  const [formData, setFormData] = useState({
     title: '',
     amount: '',
-    type: 'expense',
-    category: 'Food',
-    paymentMethod: 'Cash',
-    emotional: false
+    type: 'income',
+    category: '',
+    user: { id: userId },
   });
 
-  const handleChange = e => {
-    const { name, value, type, checked } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    getCategories().then((res) => setCategories(res.data));
+  }, []);
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, user: { id: userId } }));
+  }, [userId]);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAdd({
-      ...form,
-      amount: parseFloat(form.amount),
-      date: new Date().toISOString().slice(0, 10)
-    });
-    setForm({
-      title: '',
-      amount: '',
-      type: 'expense',
-      category: 'Food',
-      paymentMethod: 'Cash',
-      emotional: false
-    });
+    try {
+      await addTransaction(formData);
+      setFormData({
+        title: '',
+        amount: '',
+        type: 'income',
+        category: '',
+        user: { id: userId },
+      });
+      onTransactionAdded();
+    } catch (error) {
+      console.error("Add transaction failed:", error);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
-      <input name="title" className="form-control mb-2" value={form.title} onChange={handleChange} placeholder="Title" required />
-      <input name="amount" className="form-control mb-2" type="number" value={form.amount} onChange={handleChange} required />
-
-      <select name="type" className="form-control mb-2" value={form.type} onChange={handleChange}>
-        <option value="expense">Expense</option>
+    <form onSubmit={handleSubmit} className="card p-3 shadow-sm mb-4">
+      <h5>Add Transaction</h5>
+      <input
+        type="text"
+        className="form-control my-2"
+        name="title"
+        placeholder="Title"
+        value={formData.title}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="number"
+        className="form-control my-2"
+        name="amount"
+        placeholder="Amount"
+        value={formData.amount}
+        onChange={handleChange}
+        required
+      />
+      <select
+        className="form-select my-2"
+        name="type"
+        value={formData.type}
+        onChange={handleChange}
+      >
         <option value="income">Income</option>
+        <option value="expense">Expense</option>
       </select>
-
-      <select name="category" className="form-control mb-2" value={form.category} onChange={handleChange}>
-        <option value="Food">Food</option>
-        <option value="Bills">Bills</option>
-        <option value="Shopping">Shopping</option>
-        <option value="Travel">Travel</option>
-        <option value="Others">Others</option>
+      <select
+        className="form-select my-2"
+        name="category"
+        value={formData.category}
+        onChange={handleChange}
+        required
+      >
+        <option value="">Select Category</option>
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.name}>
+            {cat.name}
+          </option>
+        ))}
       </select>
-
-      <select name="paymentMethod" className="form-control mb-2" value={form.paymentMethod} onChange={handleChange}>
-        <option value="Cash">Cash</option>
-        <option value="Card">Card</option>
-        <option value="UPI">UPI</option>
-      </select>
-
-      <div className="form-check mb-2">
-        <input type="checkbox" name="emotional" className="form-check-input" checked={form.emotional} onChange={handleChange} />
-        <label className="form-check-label">Was this emotional spending?</label>
-      </div>
-
-      <button className="btn btn-success">Add Transaction</button>
+      <button className="btn btn-success mt-2">Add</button>
     </form>
   );
-}
+};
+
+export default TransactionForm;

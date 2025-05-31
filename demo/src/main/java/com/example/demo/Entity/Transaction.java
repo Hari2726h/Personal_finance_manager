@@ -3,6 +3,9 @@ package com.example.demo.Entity;
 // package com.hari.Finance.Manager.Entity;
 
 import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,7 +22,9 @@ public class Transaction {
     private String category; // e.g., Food, Bills
     private String paymentMethod; // e.g., Cash, Card
     private boolean emotional; // true if emotional spending
+@ManyToOne
+@JoinColumn(name = "user_id")
+private User user;
 
-    @ManyToOne
-    private User user;
+
 }

@@ -1,50 +1,67 @@
+// src/pages/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { getTransactions, addTransaction, deleteTransaction } from '../api';
-import TransactionForm from '../components/TransactionForm';
-import TransactionList from '../components/TransactionList';
-import WalletCashForm from '../components/WalletCashForm';
-import WalletCashList from '../components/WalletCashList';
+import { getTransactions } from '../api';
+import PieChart from '../components/PieChart';
 
-export default function Dashboard() {
-  const userId = localStorage.getItem('userId');
+const Dashboard = ({ userId }) => {
   const [transactions, setTransactions] = useState([]);
-  const [walletCash, setWalletCash] = useState([]);
+  const [summary, setSummary] = useState({ income: 0, expense: 0 });
 
   useEffect(() => {
-    refresh();
-  }, []);
+    if (userId) {
+      fetchTransactions();
+    }
+  }, [userId]);
 
-  const refresh = () => {
-    getTransactions(userId).then(res => setTransactions(res.data));
+  const fetchTransactions = async () => {
+    try {
+      const res = await getTransactions(userId);
+      const data = res.data || [];
+
+      let income = 0, expense = 0;
+      data.forEach(t => {
+        if (t.type === 'income') income += Number(t.amount);
+        else expense += Number(t.amount);
+      });
+
+      setSummary({ income, expense });
+      setTransactions(data);
+    } catch (err) {
+      console.error('Fetch error:', err);
+    }
   };
-
-  const onAdd = (tx) => {
-    addTransaction({ ...tx, user: { id: userId } }).then(refresh);
-  };
-
-  const onDelete = (id) => {
-    deleteTransaction(id).then(refresh);
-  };
-
-  const onWalletCashSave = (entry) => {
-    setWalletCash(prev => [...prev, entry]);
-  };
-
-  const summary = transactions.reduce((acc, t) => {
-    acc[t.type] += t.amount;
-    return acc;
-  }, { income: 0, expense: 0 });
 
   return (
     <div className="container mt-4">
-      <h2>Dashboard</h2>
-      <p><strong>Income:</strong> ₹{summary.income} | <strong>Expense:</strong> ₹{summary.expense} | <strong>Balance:</strong> ₹{summary.income - summary.expense}</p>
-      
-      <TransactionForm onAdd={onAdd} />
-      <TransactionList transactions={transactions} onDelete={onDelete} />
-      
-      <WalletCashForm onSave={onWalletCashSave} />
-      <WalletCashList entries={walletCash} />
+      <h2 className="mb-4">Dashboard</h2>
+      <div className="row mb-4">
+        <div className="col-md-4">
+          <div className="card text-white bg-success p-3 shadow-sm">
+            <h5>Total Income</h5>
+            <h4>₹{summary.income}</h4>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card text-white bg-danger p-3 shadow-sm">
+            <h5>Total Expenses</h5>
+            <h4>₹{summary.expense}</h4>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="card text-white bg-primary p-3 shadow-sm">
+            <h5>Balance</h5>
+            <h4>₹{summary.income - summary.expense}</h4>
+          </div>
+        </div>
+      </div>
+      <PieChart
+        data={[
+          { label: 'Income', value: summary.income },
+          { label: 'Expenses', value: summary.expense },
+        ]}
+      />
     </div>
   );
-}
+};
+
+export default Dashboard;

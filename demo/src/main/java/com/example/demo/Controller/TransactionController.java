@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.Entity.*;
 import com.example.demo.Repository.*;
-
 @RestController
 @RequestMapping("/api/transactions")
 @CrossOrigin(origins = "*")
@@ -23,15 +22,29 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<?> addTransaction(@RequestBody Transaction transaction) {
-        if (transaction.getDate() == null) transaction.setDate(LocalDate.now());
-        return ResponseEntity.ok(transactionRepo.save(transaction));
+        if (transaction.getUser() == null || transaction.getUser().getId() == null) {
+            return ResponseEntity.badRequest().body("User ID is missing");
+        }
+
+        User user = userRepo.findById(transaction.getUser().getId())
+                            .orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("Invalid User ID");
+        }
+
+        transaction.setUser(user);
+        Transaction saved = transactionRepo.save(transaction);
+        return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getTransactionsByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<Transaction>> getTransactionsByUser(@PathVariable Long userId) {
         User user = userRepo.findById(userId).orElse(null);
-        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        return ResponseEntity.ok(transactionRepo.findByUser(user));
+        if (user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<Transaction> transactions = transactionRepo.findByUser(user);
+        return ResponseEntity.ok(transactions);
     }
 
     @DeleteMapping("/{id}")
@@ -39,5 +52,4 @@ public class TransactionController {
         transactionRepo.deleteById(id);
         return ResponseEntity.ok("Deleted");
     }
-    
 }

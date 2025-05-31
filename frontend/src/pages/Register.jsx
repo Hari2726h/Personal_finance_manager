@@ -1,33 +1,45 @@
-import { useState } from 'react';
+// src/pages/Register.jsx
+import React, { useState } from 'react';
 import { register } from '../api';
 import { useNavigate } from 'react-router-dom';
 
-export default function Register() {
-  const [form, setForm] = useState({ username: '', password: '', email: '', fullName: '', phone: '' });
+const Register = () => {
+  const [form, setForm] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleRegister = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
-      const res = await register(form);
-      localStorage.setItem('userId', res.data.id);
-      navigate('/dashboard');
-    } catch {
-      alert('Registration failed');
+      await register(form);
+      navigate('/login'); // redirect to login after registration
+    } catch (err) {
+      setError('Username already exists');
     }
   };
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-5" style={{ maxWidth: 400 }}>
       <h2>Register</h2>
-      <form onSubmit={handleRegister}>
-        {['username', 'email', 'fullName', 'phone', 'password'].map(field => (
-          <input key={field} className="form-control mb-2" name={field} placeholder={field} onChange={handleChange} required />
-        ))}
-        <button className="btn btn-primary">Register</button>
+      <form onSubmit={handleSubmit}>
+        <input name="username" className="form-control mb-2" placeholder="Username" value={form.username}
+          onChange={handleChange} required />
+        <input name="password" type="password" className="form-control mb-2" placeholder="Password" value={form.password}
+          onChange={handleChange} required />
+        <button className="btn btn-success w-100">Register</button>
+        {error && <p className="text-danger mt-2">{error}</p>}
       </form>
+      <p className="mt-2">
+        Already have an account? <a href="/login">Login here</a>
+      </p>
     </div>
   );
-}
+};
+
+export default Register;

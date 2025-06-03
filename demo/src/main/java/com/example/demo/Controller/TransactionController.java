@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.Entity.*;
 import com.example.demo.Repository.*;
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/transactions")
-@CrossOrigin(origins = "*")
+// @CrossOrigin(origins = "*")
 public class TransactionController {
 
     @Autowired

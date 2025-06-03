@@ -1,45 +1,79 @@
-// src/pages/Register.jsx
 import React, { useState } from 'react';
-import { register } from '../api';
-import { useNavigate } from 'react-router-dom';
+import { registerUser } from '../api';
+import { useNavigate, Link } from 'react-router-dom';
 
-const Register = () => {
-  const [form, setForm] = useState({ username: '', password: '' });
+function Register() {
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     try {
-      await register(form);
-      navigate('/login'); // redirect to login after registration
+      const response = await registerUser(formData);
+
+      if (response.status === 200) {
+        setSuccess('Registered successfully');
+        setTimeout(() => navigate('/login'), 1000);
+      } else {
+        setError(response.data || 'Registration failed');
+      }
     } catch (err) {
-      setError('Username already exists');
+      if (err.response?.status === 409) {
+        setError('Username already exists');
+      } else {
+        setError('Registration failed');
+      }
     }
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: 400 }}>
+    <div className="container" style={{ maxWidth: 400, margin: 'auto', paddingTop: '10vh' }}>
       <h2>Register</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {success && <div className="alert alert-success">{success}</div>}
+
       <form onSubmit={handleSubmit}>
-        <input name="username" className="form-control mb-2" placeholder="Username" value={form.username}
-          onChange={handleChange} required />
-        <input name="password" type="password" className="form-control mb-2" placeholder="Password" value={form.password}
-          onChange={handleChange} required />
-        <button className="btn btn-success w-100">Register</button>
-        {error && <p className="text-danger mt-2">{error}</p>}
+        <div className="mb-3">
+          <label>Username</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            className="form-control"
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className="form-control"
+            required
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary">Register</button>
       </form>
-      <p className="mt-2">
-        Already have an account? <a href="/login">Login here</a>
+
+      <p className="mt-3">
+        Already have an account? <Link to="/login">Login here</Link>
       </p>
     </div>
   );
-};
+}
 
 export default Register;

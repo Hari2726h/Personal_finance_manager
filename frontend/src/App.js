@@ -16,9 +16,10 @@ function App() {
 
   useEffect(() => {
     const storedUserId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
     const visited = localStorage.getItem('visited');
 
-    if (storedUserId) {
+    if (storedUserId && token) {
       setLoggedInUserId(parseInt(storedUserId));
     }
 
@@ -30,16 +31,9 @@ function App() {
 
   return (
     <Router>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
-        }}
-      >
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Navbar loggedInUserId={loggedInUserId} setLoggedInUserId={setLoggedInUserId} />
 
-        {/* Main content grows to fill available space */}
         <main className="container my-4" style={{ flex: 1 }}>
           <Routes>
             <Route
@@ -49,6 +43,10 @@ function App() {
             <Route
               path="/login"
               element={<Login setLoggedInUserId={setLoggedInUserId} />}
+            />
+            <Route
+              path="/register"
+              element={<Register />}
             />
             <Route
               path="/dashboard"

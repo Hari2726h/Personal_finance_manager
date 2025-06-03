@@ -1,53 +1,53 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { login } from '../api';
+import { loginUser } from '../api';
+import { useNavigate, Link } from 'react-router-dom';
 
-const Login = ({ setLoggedInUserId }) => {
-  const [form, setForm] = useState({ username: '', password: '' });
+function Login({ setLoggedInUserId }) {
+  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await login(form);
-      const userId = res.data.id;
-      localStorage.setItem('userId', userId);
-      setLoggedInUserId(userId);
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Login error:', err);
-      alert('Invalid credentials');
-    }
-  };
+  const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await loginUser(formData);
+    localStorage.setItem('token', res.data.token);
+    localStorage.setItem('userId', res.data.userId); // ✅ Store userId
+    setLoggedInUserId(res.data.userId);              // ✅ Set userId in state
+    navigate('/dashboard');
+  } catch (err) {
+    setError(err.response?.data || 'Login failed');
+  }
+};
+
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div style={{ maxWidth: 400, margin: 'auto', paddingTop: '10vh' }}>
       <h2>Login</h2>
-      <input
-        type="text"
-        name="username"
-        value={form.username}
-        onChange={handleChange}
-        placeholder="Username or Email"
-        required
-        className="form-control my-2"
-      />
-      <input
-        type="password"
-        name="password"
-        value={form.password}
-        onChange={handleChange}
-        placeholder="Password"
-        required
-        className="form-control my-2"
-      />
-      <button className="btn btn-primary mt-2" type="submit">Login</button>
-    </form>
+      <form onSubmit={handleLogin}>
+        <input
+          name="username"
+          placeholder="Username"
+          onChange={handleChange}
+          required
+        /><br />
+        <input
+          name="password"
+          type="password"
+          placeholder="Password"
+          onChange={handleChange}
+          required
+        /><br />
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <button type="submit">Login</button>
+      </form>
+      <p>Don't have an account? <Link to="/register">Register here</Link></p>
+    </div>
   );
-};
+}
 
 export default Login;

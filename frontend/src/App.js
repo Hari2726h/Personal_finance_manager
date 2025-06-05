@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Categories from './pages/Categories';
+import Suggestions from './pages/Suggestions';
 import Reports from './pages/Reports';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -20,7 +21,7 @@ function App() {
     const visited = localStorage.getItem('visited');
 
     if (storedUserId && token) {
-      setLoggedInUserId(parseInt(storedUserId));
+      setLoggedInUserId(parseInt(storedUserId, 10));
     }
 
     if (!visited) {
@@ -36,57 +37,42 @@ function App() {
 
         <main className="container my-4" style={{ flex: 1 }}>
           <Routes>
+            {/* Redirect to Register only if first visit, else login */}
             <Route
               path="/"
               element={isFirstVisit ? <Register /> : <Navigate to="/login" />}
             />
+
+            {/* Public Routes */}
             <Route
               path="/login"
-              element={<Login setLoggedInUserId={setLoggedInUserId} />}
+              element={loggedInUserId ? <Navigate to="/dashboard" /> : <Login setLoggedInUserId={setLoggedInUserId} />}
             />
             <Route
               path="/register"
-              element={<Register />}
+              element={loggedInUserId ? <Navigate to="/dashboard" /> : <Register />}
             />
+
+            {/* Protected Routes */}
             <Route
               path="/dashboard"
-              element={
-                loggedInUserId ? (
-                  <Dashboard userId={loggedInUserId} />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              }
+              element={loggedInUserId ? <Dashboard userId={loggedInUserId} /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/suggestions"
+              element={loggedInUserId ? <Suggestions userId={loggedInUserId} /> : <Navigate to="/login" />}
             />
             <Route
               path="/transactions"
-              element={
-                loggedInUserId ? (
-                  <Transactions userId={loggedInUserId} />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              }
+              element={loggedInUserId ? <Transactions userId={loggedInUserId} /> : <Navigate to="/login" />}
             />
             <Route
               path="/categories"
-              element={
-                loggedInUserId ? (
-                  <Categories userId={loggedInUserId} />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              }
+              element={loggedInUserId ? <Categories userId={loggedInUserId} /> : <Navigate to="/login" />}
             />
             <Route
               path="/reports"
-              element={
-                loggedInUserId ? (
-                  <Reports userId={loggedInUserId} />
-                ) : (
-                  <Navigate to="/login" />
-                )
-              }
+              element={loggedInUserId ? <Reports userId={loggedInUserId} /> : <Navigate to="/login" />}
             />
           </Routes>
         </main>

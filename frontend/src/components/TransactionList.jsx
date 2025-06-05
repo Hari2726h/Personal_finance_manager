@@ -1,22 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { getTransactions, deleteTransaction } from '../api';
+import React from 'react';
+import { deleteTransaction } from '../api';
 
-const TransactionList = ({ userId, refreshFlag, onTransactionDeleted }) => {
-  const [transactions, setTransactions] = useState([]);
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [userId, refreshFlag]);
-
-  const fetchTransactions = async () => {
-    try {
-      const res = await getTransactions(userId);
-      setTransactions(res.data || []);
-    } catch (error) {
-      console.error("Fetch transactions failed:", error);
-    }
-  };
-
+const TransactionList = ({ transactions, onTransactionDeleted }) => {
   const handleDelete = async (id) => {
     try {
       await deleteTransaction(id);

@@ -11,38 +11,70 @@ const Categories = () => {
   }, []);
 
   const loadCategories = async () => {
-    const res = await getCategories();
-    setCategories(res.data || []);
+    try {
+      const res = await getCategories();
+      setCategories(res.data || []);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
   };
 
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    await addCategory({ name });
-    setName('');
-    loadCategories();
+    try {
+      await addCategory({ name });
+      setName('');
+      loadCategories();
+    } catch (error) {
+      console.error('Add category failed:', error);
+    }
   };
 
   const handleDelete = async (id) => {
-    await deleteCategory(id);
-    loadCategories();
+    try {
+      await deleteCategory(id);
+      loadCategories();
+    } catch (error) {
+      console.error('Delete category failed:', error);
+    }
   };
 
   return (
     <div className="container mt-4">
-      <h2>Manage Categories</h2>
-      <form onSubmit={handleAdd} className="d-flex gap-2 mb-3">
-        <input value={name} onChange={(e) => setName(e.target.value)} className="form-control" placeholder="New Category" />
-        <button className="btn btn-primary">Add</button>
+      <h2 className="mb-3">📂 Manage Categories</h2>
+
+      <form onSubmit={handleAdd} className="d-flex gap-2 mb-4">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="form-control"
+          placeholder="New Category (e.g., Food, Travel)"
+        />
+        <button className="btn btn-success">➕ Add</button>
       </form>
-      <ul className="list-group">
+
+      <h5 className="mb-3 text-muted">You have {categories.length} categories</h5>
+
+      <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
         {categories.map((cat) => (
-          <li key={cat.id} className="list-group-item d-flex justify-content-between">
-            {cat.name}
-            <button className="btn btn-sm btn-danger" onClick={() => handleDelete(cat.id)}>Delete</button>
-          </li>
+          <div key={cat.id} className="col">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-body d-flex justify-content-between align-items-center">
+                <span className="badge bg-primary fs-6">
+                  🏷️ {cat.name}
+                </span>
+                <button
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={() => handleDelete(cat.id)}
+                >
+                  🗑️ Delete
+                </button>
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

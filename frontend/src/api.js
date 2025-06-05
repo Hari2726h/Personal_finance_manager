@@ -1,16 +1,24 @@
 import axios from 'axios';
+axios.defaults.withCredentials = true;
 
 const API = axios.create({
   baseURL: 'http://localhost:8080/api',
+  withCredentials: true,
+});
+
+// Add token to every request if available
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // User Endpoints
 export const registerUser = (userData) => API.post('/users/register', userData);
 export const loginUser = (userData) => API.post('/users/login', userData);
-export const getProfile = (token) =>
-  API.get('/users/profile', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export const getProfile = () => API.get('/users/profile');
 export const getAllUsers = () => API.get('/users');
 
 // Transaction Endpoints

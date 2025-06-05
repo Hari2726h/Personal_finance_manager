@@ -12,40 +12,56 @@ function Login({ setLoggedInUserId }) {
   };
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await loginUser(formData);
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('userId', res.data.userId); // ✅ Store userId
-    setLoggedInUserId(res.data.userId);              // ✅ Set userId in state
-    navigate('/dashboard');
-  } catch (err) {
-    setError(err.response?.data || 'Login failed');
-  }
-};
+    e.preventDefault();
+    setError('');
 
+    try {
+      const res = await loginUser(formData);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('userId', res.data.userId);
+      setLoggedInUserId(res.data.userId);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data || 'Login failed');
+    }
+  };
 
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', paddingTop: '10vh' }}>
+    <div className="container" style={{ maxWidth: 400, margin: 'auto', paddingTop: '10vh' }}>
       <h2>Login</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
+
       <form onSubmit={handleLogin}>
-        <input
-          name="username"
-          placeholder="Username"
-          onChange={handleChange}
-          required
-        /><br />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          onChange={handleChange}
-          required
-        /><br />
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit">Login</button>
+        <div className="mb-3">
+          <label>Username</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            className="form-control"
+            required
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className="form-control"
+            required
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary">Login</button>
       </form>
-      <p>Don't have an account? <Link to="/register">Register here</Link></p>
+
+      <p className="mt-3">
+        Don't have an account? <Link to="/register">Register here</Link>
+      </p>
     </div>
   );
 }

@@ -25,8 +25,7 @@ const Transactions = ({ userId }) => {
       <h2>Transactions</h2>
       <TransactionForm userId={userId} onTransactionAdded={() => setRefresh(!refresh)} />
       <TransactionList
-        userId={userId}
-        refreshFlag={refresh}
+        transactions={transactions}
         onTransactionDeleted={() => setRefresh(!refresh)}
       />
     </div>

@@ -2,11 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { addTransaction, getCategories } from '../api';
 
 const TransactionForm = ({ userId, onTransactionAdded }) => {
+  const today = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
+
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
     type: 'income',
     category: '',
+    paymentMethod: '',
+    emotional: false,
+    date: today,
     user: { id: userId },
   });
 
@@ -17,11 +22,18 @@ const TransactionForm = ({ userId, onTransactionAdded }) => {
   }, []);
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, user: { id: userId } }));
+    setFormData((prev) => ({
+      ...prev,
+      user: { id: userId }
+    }));
   }, [userId]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === 'checkbox' ? checked : value,
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -33,6 +45,9 @@ const TransactionForm = ({ userId, onTransactionAdded }) => {
         amount: '',
         type: 'income',
         category: '',
+        paymentMethod: '',
+        emotional: false,
+        date: today,
         user: { id: userId },
       });
       onTransactionAdded();
@@ -44,6 +59,7 @@ const TransactionForm = ({ userId, onTransactionAdded }) => {
   return (
     <form onSubmit={handleSubmit} className="card p-3 shadow-sm mb-4">
       <h5>Add Transaction</h5>
+
       <input
         type="text"
         className="form-control my-2"
@@ -53,6 +69,7 @@ const TransactionForm = ({ userId, onTransactionAdded }) => {
         onChange={handleChange}
         required
       />
+
       <input
         type="number"
         className="form-control my-2"
@@ -62,6 +79,7 @@ const TransactionForm = ({ userId, onTransactionAdded }) => {
         onChange={handleChange}
         required
       />
+
       <select
         className="form-select my-2"
         name="type"
@@ -71,6 +89,7 @@ const TransactionForm = ({ userId, onTransactionAdded }) => {
         <option value="income">Income</option>
         <option value="expense">Expense</option>
       </select>
+
       <select
         className="form-select my-2"
         name="category"
@@ -85,6 +104,43 @@ const TransactionForm = ({ userId, onTransactionAdded }) => {
           </option>
         ))}
       </select>
+
+      <input
+        type="date"
+        className="form-control my-2"
+        name="date"
+        value={formData.date}
+        onChange={handleChange}
+      />
+
+      <select
+  className="form-control my-2"
+  name="paymentMethod"
+  value={formData.paymentMethod}
+  onChange={handleChange}
+  required
+>
+  <option value="">Select Payment Method</option>
+  <option value="Cash">Cash</option>
+  <option value="Credit Card">Credit Card</option>
+  <option value="Debit Card">Debit Card</option>
+  <option value="UPI">UPI</option>
+  <option value="Net Banking">Net Banking</option>
+  <option value="Other">Other</option>
+</select>
+
+
+      <div className="form-check my-2">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          name="emotional"
+          checked={formData.emotional}
+          onChange={handleChange}
+        />
+        <label className="form-check-label">Emotional Spending</label>
+      </div>
+
       <button className="btn btn-success mt-2">Add</button>
     </form>
   );
